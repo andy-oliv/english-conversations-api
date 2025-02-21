@@ -12,12 +12,15 @@ model User {
   role UserRoles @default(USER)
   name String @db.VarChar(100)
   email String @unique @db.VarChar(150)
+  birthdate DateTime @db.Date
   country String @db.VarChar(50)
   state String @db.VarChar(50)
   city String @db.VarChar(50)
   password String @db.VarChar(255)
   refreshToken String? @db.VarChar(512)
-  currentLevel CEFRLevel @default(A1)
+  currentLevel CEFRLevel? @default(A1)
+  createdAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @db.Timestamp(0)
 }
 
 enum CEFRLevel {
