@@ -5,6 +5,8 @@ import { Logger } from 'nestjs-pino';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import User from '../entities/User';
+import HTTP_MESSAGES from '../messages/httpMessages';
+import { faker } from '@faker-js/faker';
 
 jest.mock('bcrypt');
 jest.mock('uuid');
@@ -51,25 +53,25 @@ describe('UserService', () => {
   describe('createUser()', () => {
     it('should create a new user', async () => {
       const user: User = {
-        name: 'John Doe',
-        birthdate: new Date('2023-01-01'),
-        email: 'john.mail@email.com',
-        password: 'E041$9rnjLO',
-        country: 'United States',
-        state: 'Arizona',
-        city: 'Phoenix',
+        name: faker.person.fullName(),
+        birthdate: new Date(faker.date.birthdate()),
+        email: faker.internet.email(),
+        password: '',
+        country: faker.location.country(),
+        state: faker.location.state(),
+        city: faker.location.city(),
       };
 
       //mocking results
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      (bcrypt.hash as jest.Mock).mockResolvedValue('mocked-hash');
       (uuidv4 as jest.Mock).mockReturnValue('mocked-uuid');
       (prismaService.user.create as jest.Mock).mockResolvedValue({
         ...user,
         id: 'mocked-uuid',
         role: 'USER',
         currentLevel: 'A1',
-        password: 'hashedPassword',
+        password: 'mocked-hash',
       });
 
       const result = await userService.createUser(user);
@@ -94,13 +96,13 @@ describe('UserService', () => {
           country: user.country,
           state: user.state,
           city: user.city,
-          password: 'hashedPassword',
+          password: 'mocked-hash',
           currentLevel: 'A1',
         },
       });
 
       expect(result).toEqual({
-        message: expect.any(String),
+        message: HTTP_MESSAGES.user.create.status_200,
         data: {
           id: 'mocked-uuid',
           name: user.name,
@@ -110,7 +112,7 @@ describe('UserService', () => {
           country: user.country,
           state: user.state,
           city: user.city,
-          password: 'hashedPassword',
+          password: 'mocked-hash',
           currentLevel: 'A1',
         },
       });
@@ -118,13 +120,13 @@ describe('UserService', () => {
 
     it('should throw an error if the user already exists', async () => {
       const user: User = {
-        name: 'John Doe',
-        birthdate: new Date('2023-01-01'),
-        email: 'john.mail@email.com',
-        password: 'E041$9rnjLO',
-        country: 'United States',
-        state: 'Arizona',
-        city: 'Phoenix',
+        name: faker.person.fullName(),
+        birthdate: new Date(faker.date.birthdate()),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        country: faker.location.country(),
+        state: faker.location.state(),
+        city: faker.location.city(),
       };
 
       //mocking that the user already exists
@@ -138,22 +140,22 @@ describe('UserService', () => {
     it('should fetch all users', async () => {
       const users: User[] = [
         {
-          name: 'John Doe',
-          birthdate: new Date('2023-01-01'),
-          email: 'john.mail@email.com',
-          password: 'E041$9rnjLO',
-          country: 'United States',
-          state: 'Arizona',
-          city: 'Phoenix',
+          name: faker.person.fullName(),
+          birthdate: new Date(faker.date.birthdate()),
+          email: faker.internet.email(),
+          password: faker.internet.password(),
+          country: faker.location.country(),
+          state: faker.location.state(),
+          city: faker.location.city(),
         },
         {
-          name: 'Jane Doe',
-          birthdate: new Date('2023-01-01'),
-          email: 'jane.mail@email.com',
-          password: 'E041$9rnjLO',
-          country: 'United States',
-          state: 'Texas',
-          city: 'Houston',
+          name: faker.person.fullName(),
+          birthdate: new Date(faker.date.birthdate()),
+          email: faker.internet.email(),
+          password: faker.internet.password(),
+          country: faker.location.country(),
+          state: faker.location.state(),
+          city: faker.location.city(),
         },
       ];
 
@@ -163,7 +165,7 @@ describe('UserService', () => {
       const result = await userService.fetchUsers();
 
       expect(result).toEqual({
-        message: expect.any(String),
+        message: HTTP_MESSAGES.user.fetchAll.status_200,
         data: users,
       });
     });
@@ -181,14 +183,14 @@ describe('UserService', () => {
   describe('fetchUser()', () => {
     it('should fetch a user', async () => {
       const user = {
-        id: 'mocked-uuid',
-        name: 'Jane Doe',
-        birthdate: new Date('2023-01-01'),
-        email: 'jane.mail@email.com',
-        password: 'E041$9rnjLO',
-        country: 'United States',
-        state: 'Texas',
-        city: 'Houston',
+        id: faker.string.uuid(),
+        name: faker.person.fullName(),
+        birthdate: new Date(faker.date.birthdate()),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        country: faker.location.country(),
+        state: faker.location.state(),
+        city: faker.location.city(),
       };
 
       //mocking fetched user from the database
@@ -197,13 +199,13 @@ describe('UserService', () => {
       const result = await userService.fetchUser(user.id);
 
       expect(result).toEqual({
-        message: expect.any(String),
+        message: HTTP_MESSAGES.user.fetchOne.status_200,
         data: user,
       });
     });
 
     it('should throw an error if the user is not found', async () => {
-      const id: string = 'mocked-uuid';
+      const id: string = faker.string.uuid();
 
       //mocking an id that doesn't exist in the database
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
@@ -216,20 +218,20 @@ describe('UserService', () => {
     it('should update a user', async () => {
       //mocking data sent by the user
       const userData: Partial<User> = {
-        id: 'mocked-uuid',
-        country: 'Brazil',
+        id: faker.string.uuid(),
+        country: faker.location.country(),
       };
 
       //mocking the return from the database after update
       const updatedUser: User = {
-        id: 'mocked-uuid',
-        name: 'Jane Doe',
-        birthdate: new Date('2023-01-01'),
-        email: 'jane.mail@email.com',
-        password: 'E041$9rnjLO',
+        id: faker.string.uuid(),
+        name: faker.person.fullName(),
+        birthdate: new Date(faker.date.birthdate()),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
         country: userData.country,
-        state: 'Texas',
-        city: 'Houston',
+        state: faker.location.state(),
+        city: faker.location.city(),
       };
 
       //mocking database call
@@ -238,7 +240,7 @@ describe('UserService', () => {
       const result = await userService.updateUser(userData);
 
       expect(result).toEqual({
-        message: expect.any(String),
+        message: HTTP_MESSAGES.user.update.status_200,
         data: updatedUser,
       });
     });
@@ -246,8 +248,8 @@ describe('UserService', () => {
     it('should return an error if the user is not found', async () => {
       //mocking data sent by the user
       const userData: Partial<User> = {
-        id: 'mocked-uuid',
-        country: 'Brazil',
+        id: faker.string.uuid(),
+        country: faker.location.country(),
       };
 
       // Mocking Prisma to throw a P2025 error (record not found)
@@ -263,8 +265,8 @@ describe('UserService', () => {
     it("should return an error if there's a constraint violation", async () => {
       //mocking data sent by the user
       const userData: Partial<User> = {
-        id: 'mocked-uuid',
-        country: 'Brazil',
+        id: faker.string.uuid(),
+        country: faker.location.country(),
       };
 
       // Mocking Prisma to throw a P2002 error (record not found)
@@ -279,14 +281,14 @@ describe('UserService', () => {
   describe('deleteUser()', () => {
     it('should delete a user', async () => {
       const user: User = {
-        id: 'mocked-uuid',
-        name: 'Jane Doe',
-        birthdate: new Date('2023-01-01'),
-        email: 'jane.mail@email.com',
-        password: 'E041$9rnjLO',
-        country: 'USA',
-        state: 'Texas',
-        city: 'Houston',
+        id: faker.string.uuid(),
+        name: faker.person.fullName(),
+        birthdate: new Date(faker.date.birthdate()),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+        country: faker.location.country(),
+        state: faker.location.state(),
+        city: faker.location.city(),
       };
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(user);
@@ -302,12 +304,12 @@ describe('UserService', () => {
       });
 
       expect(result).toEqual({
-        message: expect.any(String),
+        message: HTTP_MESSAGES.user.delete.status_200,
       });
     });
 
     it('should throw an error if the user is not found', async () => {
-      const id: string = 'mocked-uuid';
+      const id: string = faker.string.uuid();
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
 
