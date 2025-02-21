@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -9,7 +8,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Logger } from 'nestjs-pino';
 import User from '../entities/User';
 import { v4 as uuidv4 } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 import * as bcrypt from 'bcrypt';
 import * as dayjs from 'dayjs';
 import EXCEPTION_MESSAGES from '../messages/exceptionMessages';
