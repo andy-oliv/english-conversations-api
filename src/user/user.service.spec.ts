@@ -102,7 +102,7 @@ describe('UserService', () => {
       });
 
       expect(result).toEqual({
-        message: HTTP_MESSAGES.user.create.status_200,
+        message: HTTP_MESSAGES.user.create.status_201,
         data: {
           id: 'mocked-uuid',
           name: user.name,

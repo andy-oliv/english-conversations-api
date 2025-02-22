@@ -6,7 +6,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDTO } from './DTOs/createUserDTO';
 import HTTP_MESSAGES from '../messages/httpMessages';
 import User from '../entities/User';
-import FetchUserDTO from './DTOs/fetchUserDTO';
 import UpdateUserDTO from './DTOs/updateUserDTO';
 import { faker } from '@faker-js/faker';
 
@@ -54,7 +53,7 @@ describe('UserController', () => {
       };
 
       const response = {
-        message: HTTP_MESSAGES.user.create.status_200,
+        message: HTTP_MESSAGES.user.create.status_201,
         data: mockUser,
       };
 
@@ -110,7 +109,7 @@ describe('UserController', () => {
 
   describe('fetchUser()', () => {
     it('should return the fetched user', async () => {
-      const requestParam: FetchUserDTO = { id: 'mocked-uuid' };
+      const id: string = 'mocked-uuid';
 
       const user: User = {
         id: faker.string.uuid(),
@@ -131,7 +130,7 @@ describe('UserController', () => {
       //Assuming fetchUser returns a user
       jest.spyOn(userService, 'fetchUser').mockResolvedValue(response);
 
-      const result = await userController.fetchUser(requestParam);
+      const result = await userController.fetchUser(id);
 
       expect(result).toEqual(response);
       expect(logger.log).toHaveBeenCalledWith(
@@ -142,7 +141,7 @@ describe('UserController', () => {
 
   describe('updateUser()', () => {
     it('should return the updated user', async () => {
-      const requestParam: FetchUserDTO = { id: 'mocked-uuid' };
+      const id: string = 'mocked-uuid';
       const requestBody: UpdateUserDTO = {
         name: faker.person.fullName(),
         birthdate: new Date(faker.date.birthdate()),
@@ -152,7 +151,7 @@ describe('UserController', () => {
       };
 
       const user: User = {
-        id: requestParam.id,
+        id,
         name: requestBody.name,
         email: faker.internet.email(),
         birthdate: requestBody.birthdate,
@@ -170,10 +169,7 @@ describe('UserController', () => {
       //Assuming updateUser returns an updatedUser
       jest.spyOn(userService, 'updateUser').mockResolvedValue(response);
 
-      const result = await userController.updateUser(
-        { ...requestParam },
-        { ...requestBody },
-      );
+      const result = await userController.updateUser(id, { ...requestBody });
 
       expect(result).toEqual(response);
       expect(logger.log).toHaveBeenCalledWith('A user is being updated');
@@ -182,7 +178,7 @@ describe('UserController', () => {
 
   describe('deleteUser()', () => {
     it('should return the updated user', async () => {
-      const requestParam: FetchUserDTO = { id: 'mocked-uuid' };
+      const id = 'mocked-uuid';
 
       const response = {
         message: HTTP_MESSAGES.user.delete.status_200,
@@ -191,7 +187,7 @@ describe('UserController', () => {
       //Assuming updateUser returns an updatedUser
       jest.spyOn(userService, 'deleteUser').mockResolvedValue(response);
 
-      const result = await userController.deleteUser(requestParam);
+      const result = await userController.deleteUser(id);
 
       expect(result).toEqual(response);
       expect(logger.log).toHaveBeenCalledWith('A user is being deleted');

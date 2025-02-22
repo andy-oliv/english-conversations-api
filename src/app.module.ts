@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 import { UserModule } from './user/user.module';
 import { APP_GUARD } from '@nestjs/core';
+import { ChapterModule } from './chapter/chapter.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     PrismaModule,
     UserModule,
+    ChapterModule,
   ],
   controllers: [AppController],
   providers: [

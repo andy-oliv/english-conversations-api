@@ -6,66 +6,30 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Logger } from 'nestjs-pino';
-import User from '../entities/User';
-import { v4 as uuidv4 } from 'uuid';
-import * as bcrypt from 'bcrypt';
+import Chapter from '../entities/Chapter';
+import HTTP_MESSAGES from '../messages/httpMessages';
 import * as dayjs from 'dayjs';
 import EXCEPTION_MESSAGES from '../messages/exceptionMessages';
-import { CEFRLevel, UserRoles } from '@prisma/client';
-import HTTP_MESSAGES from '../messages/httpMessages';
 
 @Injectable()
-export class UserService {
+export class ChapterService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly logger: Logger,
   ) {}
 
-  async createUser(user: User): Promise<{ message: string; data: User }> {
-    const validatedUser: User = await this.prismaService.user.findUnique({
-      where: {
-        email: user.email,
-      },
-    });
-
-    if (validatedUser) {
-      throw new ConflictException({
-        message: HTTP_MESSAGES.user.create.status_409,
-        pid: process.pid,
-        timestamp: dayjs().format('DD/MM/YYYY'),
-      });
-    }
-
-    const id: string = uuidv4();
-    const saltRounds: number = parseInt(process.env.SALT_ROUNDS);
-
-    if (isNaN(saltRounds)) {
-      throw new InternalServerErrorException({
-        message: EXCEPTION_MESSAGES.user.missingSaltRounds,
-        pid: process.pid,
-        timestamp: dayjs().format('DD/MM/YYYY'),
-      });
-    }
-
-    const hash: string = await bcrypt.hash(user.password, saltRounds);
-
+  async createChapter(
+    chapterData: Chapter,
+  ): Promise<{ message: string; data: Chapter }> {
     try {
-      const newUser: User = await this.prismaService.user.create({
-        data: {
-          id,
-          name: user.name,
-          role: UserRoles.USER,
-          birthdate: dayjs(user.birthdate).toISOString(),
-          email: user.email,
-          country: user.country,
-          state: user.state,
-          city: user.city,
-          password: hash,
-          currentLevel: CEFRLevel.A1,
-        },
+      const newChapter: Chapter = await this.prismaService.chapter.create({
+        data: chapterData,
       });
 
-      return { message: HTTP_MESSAGES.user.create.status_201, data: newUser };
+      return {
+        message: HTTP_MESSAGES.chapter.create.status_201,
+        data: newChapter,
+      };
     } catch (error) {
       this.logger.error({
         message: HTTP_MESSAGES.internal.status_500,
@@ -77,26 +41,29 @@ export class UserService {
       });
 
       throw new InternalServerErrorException({
-        message: HTTP_MESSAGES.user.create.status_500,
+        message: HTTP_MESSAGES.chapter.create.status_500,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });
     }
   }
 
-  async fetchUsers(): Promise<{ message: string; data: User[] }> {
+  async fetchChapters(): Promise<{ message: string; data: Chapter[] }> {
     try {
-      const users: User[] = await this.prismaService.user.findMany();
+      const chapters: Chapter[] = await this.prismaService.chapter.findMany();
 
-      if (users.length === 0) {
+      if (chapters.length === 0) {
         throw new NotFoundException({
-          message: HTTP_MESSAGES.user.fetchAll.status_404,
+          message: HTTP_MESSAGES.chapter.fetchAll.status_404,
           pid: process.pid,
           timestamp: dayjs().format('DD/MM/YYYY'),
         });
       }
 
-      return { message: HTTP_MESSAGES.user.fetchAll.status_200, data: users };
+      return {
+        message: HTTP_MESSAGES.chapter.fetchAll.status_200,
+        data: chapters,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -112,30 +79,36 @@ export class UserService {
       });
 
       throw new InternalServerErrorException({
-        message: HTTP_MESSAGES.user.fetchAll.status_500,
+        message: HTTP_MESSAGES.chapter.fetchAll.status_500,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });
     }
   }
 
-  async fetchUser(id: string): Promise<{ message: string; data: User }> {
+  async fetchChapter(id: number): Promise<{ message: string; data: Chapter }> {
     try {
-      const user: User = await this.prismaService.user.findUnique({
+      const chapter: Chapter = await this.prismaService.chapter.findUnique({
         where: {
           id,
         },
+        include: {
+          nextChapters: true,
+        },
       });
 
-      if (!user) {
+      if (!chapter) {
         throw new NotFoundException({
-          message: HTTP_MESSAGES.user.fetchOne.status_404,
+          message: HTTP_MESSAGES.chapter.fetchOne.status_404,
           pid: process.pid,
           timestamp: dayjs().format('DD/MM/YYYY'),
         });
       }
 
-      return { message: HTTP_MESSAGES.user.fetchOne.status_200, data: user };
+      return {
+        message: HTTP_MESSAGES.chapter.fetchOne.status_200,
+        data: chapter,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -151,31 +124,35 @@ export class UserService {
       });
 
       throw new InternalServerErrorException({
-        message: HTTP_MESSAGES.user.fetchOne.status_500,
+        message: HTTP_MESSAGES.chapter.fetchOne.status_500,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });
     }
   }
 
-  async updateUser(
-    userData: Partial<User>,
-  ): Promise<{ message: string; data: User }> {
+  async updateChapter(
+    id: number,
+    updatedData: Partial<Chapter>,
+  ): Promise<{ message: string; data: Chapter }> {
     try {
-      const user: User = await this.prismaService.user.update({
+      const updatedChapter: Chapter = await this.prismaService.chapter.update({
         where: {
-          id: userData.id,
+          id,
         },
         data: {
-          name: userData.name,
-          birthdate: userData.birthdate,
-          country: userData.country,
-          state: userData.state,
-          city: userData.city,
+          title: updatedData.title,
+          description: updatedData.description,
+          mediaUrl: updatedData.mediaUrl,
+          duration: updatedData.duration,
+          requiredChapterId: updatedData.requiredChapterId,
         },
       });
 
-      return { message: HTTP_MESSAGES.user.update.status_200, data: user };
+      return {
+        message: HTTP_MESSAGES.chapter.update.status_200,
+        data: updatedChapter,
+      };
     } catch (error) {
       if (error.code === 'P2025') {
         this.logger.error({
@@ -188,11 +165,12 @@ export class UserService {
         });
 
         throw new NotFoundException({
-          message: HTTP_MESSAGES.user.update.status_404,
+          message: HTTP_MESSAGES.chapter.update.status_404,
           pid: process.pid,
           timestamp: dayjs().format('DD/MM/YYYY'),
         });
       }
+
       this.logger.error({
         message: HTTP_MESSAGES.internal.status_500,
         code: error.code,
@@ -203,35 +181,35 @@ export class UserService {
       });
 
       throw new InternalServerErrorException({
-        message: HTTP_MESSAGES.user.update.status_500,
+        message: HTTP_MESSAGES.chapter.update.status_500,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });
     }
   }
 
-  async deleteUser(id: string): Promise<{ message: string }> {
-    const user: User = await this.prismaService.user.findUnique({
+  async deleteChapter(id: number): Promise<{ message: string }> {
+    const chapterFound: Chapter = await this.prismaService.chapter.findUnique({
       where: {
         id,
       },
     });
 
-    if (!user) {
+    if (!chapterFound) {
       throw new NotFoundException({
-        message: HTTP_MESSAGES.user.delete.status_404,
+        message: HTTP_MESSAGES.chapter.delete.status_404,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });
     }
-
     try {
-      await this.prismaService.user.delete({
+      await this.prismaService.chapter.delete({
         where: {
-          id: user.id,
+          id,
         },
       });
-      return { message: HTTP_MESSAGES.user.delete.status_200 };
+
+      return { message: HTTP_MESSAGES.chapter.delete.status_200 };
     } catch (error) {
       this.logger.error({
         message: HTTP_MESSAGES.internal.status_500,
@@ -243,7 +221,7 @@ export class UserService {
       });
 
       throw new InternalServerErrorException({
-        message: HTTP_MESSAGES.user.delete.status_500,
+        message: HTTP_MESSAGES.chapter.delete.status_500,
         pid: process.pid,
         timestamp: dayjs().format('DD/MM/YYYY'),
       });

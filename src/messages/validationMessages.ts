@@ -42,6 +42,26 @@ const VALIDATION_MESSAGES = {
       isInCEFRLevels: 'Invalid level.',
     },
   },
+  chapterDTO: {
+    title: {
+      isNotEmpty: 'The title field cannot be empty.',
+      isString: 'The title needs to be a string.',
+    },
+    description: {
+      isNotEmpty: 'The description field cannot be empty.',
+      isString: 'The description needs to be a string.',
+    },
+    mediaUrl: {
+      isString: 'The mediaUrl field needs to be a string.',
+    },
+    duration: {
+      isNotEmpty: 'The duration field cannot be empty.',
+      isString: 'The duration needs to be a string.',
+    },
+    requiredChapterId: {
+      isInt: 'The requiredChapterId field needs to be an integer.',
+    },
+  },
 };
 
 export default VALIDATION_MESSAGES;

@@ -23,6 +23,19 @@ model User {
   updatedAt DateTime @updatedAt @db.Timestamp(0)
 }
 
+model Chapter {
+  id Int @id @default(autoincrement())
+  title String @db.VarChar(100)
+  description String @db.Text
+  mediaUrl String? @db.VarChar(500)
+  duration String @db.VarChar(10)
+  requiredChapter Chapter? @relation("Prerequisite", fields: [requiredChapterId], references: [id])
+  requiredChapterId Int?
+  nextChapters Chapter[] @relation("Prerequisite")
+  createdAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP")) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @db.Timestamp(0) 
+}
+
 enum CEFRLevel {
   A1
   A2
