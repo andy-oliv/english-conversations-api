@@ -48,9 +48,9 @@ export class UserController {
     description: 'Internal error',
     example: HTTP_MESSAGES.user.create.status_500,
   })
-  createUser(@Body() newUser: CreateUserDTO) {
+  async createUser(@Body() newUser: CreateUserDTO) {
     this.logger.log('Creating new user');
-    return this.userService.createUser(newUser);
+    return await this.userService.createUser(newUser);
   }
 
   @Get()
@@ -69,9 +69,9 @@ export class UserController {
     description: 'Internal error',
     example: HTTP_MESSAGES.user.fetchAll.status_500,
   })
-  fetchUsers() {
+  async fetchUsers() {
     this.logger.log('Fetching users from the database');
-    return this.userService.fetchUsers();
+    return await this.userService.fetchUsers();
   }
 
   @Get(':id')
@@ -96,9 +96,9 @@ export class UserController {
     description: 'Internal error',
     example: HTTP_MESSAGES.user.fetchOne.status_500,
   })
-  fetchUser(@Param('id', new ParseUUIDPipe()) id: string) {
+  async fetchUser(@Param('id', new ParseUUIDPipe()) id: string) {
     this.logger.log('Fetching user from the database');
-    return this.userService.fetchUser(id);
+    return await this.userService.fetchUser(id);
   }
 
   @Patch(':id')
@@ -128,7 +128,7 @@ export class UserController {
     description: 'Internal error',
     example: HTTP_MESSAGES.user.update.status_500,
   })
-  updateUser(
+  async updateUser(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updatedData: UpdateUserDTO,
   ) {
@@ -142,7 +142,7 @@ export class UserController {
     }
 
     this.logger.log('A user is being updated');
-    return this.userService.updateUser({
+    return await this.userService.updateUser({
       id,
       ...updatedData,
     });
@@ -170,8 +170,8 @@ export class UserController {
     description: 'Internal error',
     example: HTTP_MESSAGES.user.delete.status_500,
   })
-  deleteUser(@Param('id', new ParseUUIDPipe()) id: string) {
+  async deleteUser(@Param('id', new ParseUUIDPipe()) id: string) {
     this.logger.log('A user is being deleted');
-    return this.userService.deleteUser(id);
+    return await this.userService.deleteUser(id);
   }
 }

@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import User from '../entities/User';
 import HTTP_MESSAGES from '../messages/httpMessages';
 import { faker } from '@faker-js/faker';
+import generateMockUser from '../utils/mockUser';
 
 jest.mock('bcrypt');
 jest.mock('uuid');
@@ -52,15 +53,7 @@ describe('UserService', () => {
 
   describe('createUser()', () => {
     it('should create a new user', async () => {
-      const user: User = {
-        name: faker.person.fullName(),
-        birthdate: new Date(faker.date.birthdate()),
-        email: faker.internet.email(),
-        password: '',
-        country: faker.location.country(),
-        state: faker.location.state(),
-        city: faker.location.city(),
-      };
+      const user: User = generateMockUser();
 
       //mocking results
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
@@ -119,15 +112,7 @@ describe('UserService', () => {
     });
 
     it('should throw an error if the user already exists', async () => {
-      const user: User = {
-        name: faker.person.fullName(),
-        birthdate: new Date(faker.date.birthdate()),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        country: faker.location.country(),
-        state: faker.location.state(),
-        city: faker.location.city(),
-      };
+      const user: User = generateMockUser();
 
       //mocking that the user already exists
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(user);
@@ -138,26 +123,7 @@ describe('UserService', () => {
 
   describe('fetchUsers()', () => {
     it('should fetch all users', async () => {
-      const users: User[] = [
-        {
-          name: faker.person.fullName(),
-          birthdate: new Date(faker.date.birthdate()),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-          country: faker.location.country(),
-          state: faker.location.state(),
-          city: faker.location.city(),
-        },
-        {
-          name: faker.person.fullName(),
-          birthdate: new Date(faker.date.birthdate()),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-          country: faker.location.country(),
-          state: faker.location.state(),
-          city: faker.location.city(),
-        },
-      ];
+      const users: User[] = [generateMockUser(), generateMockUser()];
 
       //mocking database fetch
       (prismaService.user.findMany as jest.Mock).mockResolvedValue(users);
@@ -182,17 +148,7 @@ describe('UserService', () => {
 
   describe('fetchUser()', () => {
     it('should fetch a user', async () => {
-      const user = {
-        id: faker.string.uuid(),
-        name: faker.person.fullName(),
-        birthdate: new Date(faker.date.birthdate()),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        country: faker.location.country(),
-        state: faker.location.state(),
-        city: faker.location.city(),
-      };
-
+      const user = generateMockUser();
       //mocking fetched user from the database
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(user);
 
@@ -280,16 +236,7 @@ describe('UserService', () => {
 
   describe('deleteUser()', () => {
     it('should delete a user', async () => {
-      const user: User = {
-        id: faker.string.uuid(),
-        name: faker.person.fullName(),
-        birthdate: new Date(faker.date.birthdate()),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        country: faker.location.country(),
-        state: faker.location.state(),
-        city: faker.location.city(),
-      };
+      const user: User = generateMockUser();
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(user);
       (prismaService.user.delete as jest.Mock).mockResolvedValue(user);

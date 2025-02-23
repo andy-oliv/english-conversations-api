@@ -8,6 +8,7 @@ import HTTP_MESSAGES from '../messages/httpMessages';
 import User from '../entities/User';
 import UpdateUserDTO from './DTOs/updateUserDTO';
 import { faker } from '@faker-js/faker';
+import generateMockUser from '../utils/mockUser';
 
 describe('UserController', () => {
   let userController: UserController;
@@ -69,26 +70,7 @@ describe('UserController', () => {
 
   describe('fetchUsers()', () => {
     it('should return the fetched users', async () => {
-      const users: User[] = [
-        {
-          name: faker.person.fullName(),
-          email: faker.internet.email(),
-          birthdate: new Date(faker.date.birthdate()),
-          country: faker.location.country(),
-          state: faker.location.state(),
-          city: faker.location.city(),
-          password: '',
-        },
-        {
-          name: faker.person.fullName(),
-          email: faker.internet.email(),
-          birthdate: new Date(faker.date.birthdate()),
-          country: faker.location.country(),
-          state: faker.location.state(),
-          city: faker.location.city(),
-          password: '',
-        },
-      ];
+      const users: User[] = [generateMockUser(), generateMockUser()];
 
       const response = {
         message: HTTP_MESSAGES.user.fetchAll.status_200,
@@ -111,16 +93,7 @@ describe('UserController', () => {
     it('should return the fetched user', async () => {
       const id: string = 'mocked-uuid';
 
-      const user: User = {
-        id: faker.string.uuid(),
-        name: faker.person.fullName(),
-        email: faker.internet.email(),
-        birthdate: new Date(faker.date.birthdate()),
-        country: faker.location.country(),
-        state: faker.location.state(),
-        city: faker.location.city(),
-        password: '',
-      };
+      const user: User = generateMockUser();
 
       const response = {
         message: HTTP_MESSAGES.user.fetchOne.status_200,
@@ -150,16 +123,7 @@ describe('UserController', () => {
         city: faker.location.city(),
       };
 
-      const user: User = {
-        id,
-        name: requestBody.name,
-        email: faker.internet.email(),
-        birthdate: requestBody.birthdate,
-        country: requestBody.country,
-        state: requestBody.state,
-        city: requestBody.city,
-        password: '',
-      };
+      const user: User = generateMockUser();
 
       const response = {
         message: HTTP_MESSAGES.user.update.status_200,

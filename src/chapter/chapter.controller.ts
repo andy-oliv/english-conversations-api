@@ -36,9 +36,9 @@ export class ChapterController {
     description: 'Internal error',
     example: HTTP_MESSAGES.chapter.create.status_500,
   })
-  createChapter(@Body() chapterData: CreateChapterDTO) {
+  async createChapter(@Body() chapterData: CreateChapterDTO) {
     this.logger.log('Creating new chapter');
-    return this.chapterService.createChapter(chapterData);
+    return await this.chapterService.createChapter(chapterData);
   }
 
   @Get()
@@ -57,9 +57,9 @@ export class ChapterController {
     description: 'Internal error',
     example: HTTP_MESSAGES.chapter.fetchAll.status_500,
   })
-  fetchChapters() {
+  async fetchChapters() {
     this.logger.log('Fetching chapters from the database');
-    return this.chapterService.fetchChapters();
+    return await this.chapterService.fetchChapters();
   }
 
   @Get(':id')
@@ -78,17 +78,17 @@ export class ChapterController {
     description: 'Internal error',
     example: HTTP_MESSAGES.chapter.fetchOne.status_500,
   })
-  fetchChapter(@Param('id', new ParseIntPipe()) id: number) {
+  async fetchChapter(@Param('id', new ParseIntPipe()) id: number) {
     this.logger.log('Fetching chapter from the database');
-    return this.chapterService.fetchChapter(id);
+    return await this.chapterService.fetchChapter(id);
   }
 
   @Patch(':id')
-  updateChapter(
+  async updateChapter(
     @Param('id', new ParseIntPipe()) id: number,
     @Body() updatedData: UpdateChapterDTO,
   ) {
-    if (updatedData === undefined) {
+    if (!updatedData || Object.keys(updatedData).length === 0) {
       this.logger.log('Request to update a chapter with an empty body.');
       throw new BadRequestException({
         message: HTTP_MESSAGES.chapter.update.status_400,
@@ -97,12 +97,12 @@ export class ChapterController {
       });
     }
     this.logger.log('A chapter is being updated');
-    return this.chapterService.updateChapter(id, updatedData);
+    return await this.chapterService.updateChapter(id, updatedData);
   }
 
   @Delete(':id')
-  deleteChapter(@Param('id', new ParseIntPipe()) id: number) {
+  async deleteChapter(@Param('id', new ParseIntPipe()) id: number) {
     this.logger.log('A chapter is being deleted');
-    return this.chapterService.deleteChapter(id);
+    return await this.chapterService.deleteChapter(id);
   }
 }
